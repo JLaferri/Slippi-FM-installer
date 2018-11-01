@@ -82,9 +82,9 @@ echo ""
 # Set options for targeting a particular release.
 
 # For now, just deal with building r9 (make this user-configurable later).
-COMMITHASH="506ac2e60489edb7a854c59e526ddcf62880f5f9"
+COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
 DOLPHIN_REPO="https://github.com/JLaferri/Ishiiruka.git"
-SLIPVER="r9"
+SLIPVER="r10"
 echo "[*] Targeting Slippi release: $SLIPVER"
 
 FOLDERNAME="Slippi-FM-${SLIPVER}"
