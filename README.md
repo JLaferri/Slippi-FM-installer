@@ -4,7 +4,7 @@ This is a fork of the [Faster Melee build script for Linux](https://github.com/F
 specific to building Ishiiruka with Project Slippi support. It currently supports building the following versions 
 of the Slippi Ishiiruka fork:
 
-- Slippi Ishiiruka r9: `506ac2e60489edb7a854c59e526ddcf62880f5f9`
+- Slippi Ishiiruka r10: `50f504eb710d1b1e74356e75f8fbef310b811951`
 
 ## Usage
 ```sh
