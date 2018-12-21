@@ -8,7 +8,7 @@ of the Slippi Ishiiruka fork:
 
 ## Usage
 ```sh
-sh -c "$(curl -Ls https://github.com/hosaka-corp/Slippi-FM-installer/raw/master/setup)"
+sh -c "$(curl -Ls https://github.com/project-slippi/Slippi-FM-installer/raw/master/setup)"
 ```
 
 ------------------------------------
