@@ -5,11 +5,8 @@ set -e
 # on the FM 5.9 configuration files (which should be tracked in the repository
 # with this script). This script needs to modify these files.
 
-DOLPHIN_REPO="https://github.com/project-slippi/Ishiiruka"
 SCRIPT_REPO="https://github.com/project-slippi/Slippi-FM-installer"
 PROJECT_REPO="https://github.com/project-slippi/project-slippi"
-
-BRANCH_NAME="slippi"
 
 CONFIG_TAR="5.9-fmconfig.tar.gz"
 CONFIG_URL="${SCRIPT_REPO}/raw/master/config/${CONFIG_TAR}"
