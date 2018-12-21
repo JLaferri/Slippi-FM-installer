@@ -135,7 +135,7 @@ tar -xzf "$CONFIG_TAR" --checkpoint-action='exec=printf "%d/410 records extracte
 rm "$CONFIG_TAR"
 
 echo "[*] Cloning from $DOLPHIN_REPO ..."
-git clone -b "$BRANCH_NAME" --depth 1 "$DOLPHIN_REPO" Ishiiruka
+git clone "$DOLPHIN_REPO" Ishiiruka
 cd Ishiiruka
 git checkout "$COMMITHASH"
 
