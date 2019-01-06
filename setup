@@ -11,6 +11,11 @@ PROJECT_REPO="https://github.com/project-slippi/project-slippi"
 CONFIG_TAR="5.9-fmconfig.tar.gz"
 CONFIG_URL="${SCRIPT_REPO}/raw/master/config/${CONFIG_TAR}"
 
+# Remove Ishiiruka build directory after invoking CMAKE/GCC. Just set this to
+# zero if you'd rather keep the build directory around (although you may have
+# to manually remove it if you need to run this script multiple times).
+DO_CLEANUP=1
+
 # Attempts to determine the number of cores in the CPU
 # Source: https://gist.github.com/jj1bdx/5746298
 
@@ -136,6 +141,18 @@ git clone "$DOLPHIN_REPO" Ishiiruka
 cd Ishiiruka
 git checkout "$COMMITHASH"
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# D A N G E R
+# A hack to avoid using local system's SoundTouch libraries. An in-tree fix 
+# should be around in newer commits, so you'll need to update this script when 
+# switching off of commit 50f504..! You can safely remove this sed invocation
+# after this has been sorted in the next release.
+
+echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
+sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 # -----------------------------------------------------------------------------
 # Add config files into the build directory, then compile Ishiiruka and pull
@@ -151,9 +168,11 @@ make -j $CPUS -s
 
 cd ../..
 mv Ishiiruka/build/Binaries/ bin/
-rm -rf Ishiiruka
-rm -f ../launch-slippi-fm
 
+if [[ $DO_CLEANUP == 1 ]]; then
+	rm -rf Ishiiruka
+	rm -f ../launch-slippi-fm
+fi
 
 # -----------------------------------------------------------------------------
 # Modify the upstream FM config for use with Slippi Ishiiruka
