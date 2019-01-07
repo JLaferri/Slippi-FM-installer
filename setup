@@ -1,24 +1,11 @@
 #!/bin/sh
 set -e
 
-# Currently we assume that configuration for all Slippi releases will be based
-# on the FM 5.9 configuration files (which should be tracked in the repository
-# with this script). This script needs to modify these files.
-
-SCRIPT_REPO="https://github.com/project-slippi/Slippi-FM-installer"
-PROJECT_REPO="https://github.com/project-slippi/project-slippi"
-
-CONFIG_TAR="5.9-fmconfig.tar.gz"
-CONFIG_URL="${SCRIPT_REPO}/raw/master/config/${CONFIG_TAR}"
-
-# Remove Ishiiruka build directory after invoking CMAKE/GCC. Just set this to
-# zero if you'd rather keep the build directory around (although you may have
-# to manually remove it if you need to run this script multiple times).
+# Just set this to zero if you'd rather keep the build directory around.
 DO_CLEANUP=1
 
 # Attempts to determine the number of cores in the CPU
 # Source: https://gist.github.com/jj1bdx/5746298
-
 CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 [ -z "$CPUS" ] && CPUS=$(getconf NPROCESSORS_ONLN)
 [ -z "$CPUS" ] && CPUS=$(ksh93 -c 'getconf NPROCESSORS_ONLN')
@@ -85,12 +72,29 @@ echo ""
 # -----------------------------------------------------------------------------
 # Set options for targeting a particular release.
 
+# This script assumes the existence of a `$r{SLIPVER}-config.tar.gz` in the 
+# root of the installer repository which has the following structure:
+#
+#	- Sys/
+#	- User/
+#	- portable.txt
+#
+# Until we have to deal with managing multiple releases, just rely on this
+# file having the current latest Dolphin configuration. Eventually, we need
+# to sort out some process for building this config files (mostly by using
+# `project-slippi/slippi-ssbm-asm` to compile Gecko codes, etc).
+
 # For now, just deal with building r10 (make this user-configurable later).
 COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
 DOLPHIN_REPO="https://github.com/project-slippi/Ishiiruka.git"
+SCRIPT_REPO="https://github.com/project-slippi/Slippi-FM-installer"
 SLIPVER="r10"
-echo "[*] Targeting Slippi release: $SLIPVER"
 
+# Path to the tarball containing the Dolphin configuration files
+CONFIG_TAR="${SLIPVER}-config.tar.gz"
+CONFIG_URL="${SCRIPT_REPO}/raw/master/${CONFIG_TAR}"
+
+echo "[*] Targeting Slippi release: $SLIPVER"
 FOLDERNAME="Slippi-FM-${SLIPVER}"
 if [ -d "$FOLDERNAME" ]; then
 	echo "[*] FM Folder with same version found! Would you like to overwrite? (y/N) "
@@ -142,61 +146,43 @@ cd Ishiiruka
 git checkout "$COMMITHASH"
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# D A N G E R
-# A hack to avoid using local system's SoundTouch libraries. An in-tree fix 
+# Hack to avoid using local system's SoundTouch libraries. An in-tree fix 
 # should be around in newer commits, so you'll need to update this script when 
-# switching off of commit 50f504..! You can safely remove this sed invocation
-# after this has been sorted in the next release.
+# switching off of the release associated with commit 50f504! You can safely 
+# remove this sed invocation after this has been sorted in the next release.
 
 echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
 sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
 # -----------------------------------------------------------------------------
 # Add config files into the build directory, then compile Ishiiruka and pull
 # out the binary/configuration before deleting the tree
 
-echo "[*] Moving FM config files into the build directory"
+# Go into build directory
 mkdir build && cd build
+
+# Move files from config tarball into the Ishiiruka build directory
+echo "[*] Moving Slippi/FM config files into the build directory"
 mv ../../Binaries .
 mv ../Data/dolphin-emu.png Binaries/
 
+# Build Ishiiruka, yielding `dolphin-emu` binaries
 cmake .. -DLINUX_LOCAL_DEV=true
 make -j $CPUS -s
 
+# Leave build directory (now prepared all config files and binaries)
 cd ../..
-mv Ishiiruka/build/Binaries/ bin/
+
+# Pull out all build artifacts into a bin/ directory for the user
+mv Ishiiruka/build/Binaries/ ./bin/
+mkdir ./bin/Slippi
 
 if [[ $DO_CLEANUP == 1 ]]; then
 	rm -rf Ishiiruka
 	rm -f ../launch-slippi-fm
 fi
-
-# -----------------------------------------------------------------------------
-# Modify the upstream FM config for use with Slippi Ishiiruka
-
-GALE01_INI="./bin/User/GameSettings/GALE01.ini"
-GALE01R2_INI="./bin/Sys/GameSettings/GALE01r2.ini"
-DOLPHIN_INI="./bin/User/Config/Dolphin.ini"
-CODELIST_URL="${PROJECT_REPO}/raw/master/Gecko%20Codes/CodeList.txt"
-
-echo "[*] Adding Slippi configuration files .."
-mkdir ./bin/Slippi
-
-# Set device in EXI Slot B to Slippi (device 10)
-sed -i -e 's/SlotA = .*$/SlotA = 255/g' \
-	-e 's/SlotB = .*$/SlotB = 10/g' \
-	"$DOLPHIN_INI"
-
-# Add both Slippi codesets to the set of NTSC v1.02 Gecko codes
-echo '' >> "$GALE01R2_INI"
-curl -Ls "$CODELIST_URL" >> "$GALE01R2_INI"
-
-# Enable Slippi Recording
-sed -i -e '/\$Game Music ON/a \$Slippi Recording' "$GALE01_INI"
-
 
 # -----------------------------------------------------------------------------
 # Make a symlink to Slippi Ishiiruka, optionally create a shortcut
@@ -223,7 +209,6 @@ Exec=$EXEPATH/dolphin-emu" | tee ~/.local/share/applications/slippi-fm-$SLIPVER.
 else
 	echo "[!] .local folder not found, skipping desktop shortcut"
 fi
-
 
 echo "[!] All done! Run ./launch-slippi-fm to run the latest installed version!" 
 echo "    Alternatively, go to Application > Games or your desktop and select the"
