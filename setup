@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+set -x
 
 # Just set this to zero if you'd rather keep the build directory around.
 DO_CLEANUP=1
@@ -197,40 +198,39 @@ make -j $CPUS -s
 cd ../..
 
 # Pull out all build artifacts into a bin/ directory for the user
-mv Ishiiruka/build/Binaries/ ./bin/
-mkdir ./bin/Slippi
+mv Ishiiruka/build/Binaries/ ./netplay/
+mkdir ./netplay/Slippi
 
 # We don't care about preserving things for r10 here because the launcher is
 # only compatible starting with >r11
 if [[ "$SLIPVER" != "r10" ]]; then
-	# Have two seperate directories - netplay and playback
-	mkdir netplay
-	mv ./bin/ netplay/
+	# Have two directories - netplay and playback
 	cp -R netplay/ playback
 
 	# Pull out the playback configuration
-
 	echo "[*] Downloading playback config files..."
 	curl -LO# $PLAYBACK_CONFIG_URL
 	tar -xzf "$PLAYBACK_CONFIG_TAR" --checkpoint-action='exec=printf "%d/410 records extracted.\r" $TAR_CHECKPOINT' --totals
 	rm "$PLAYBACK_CONFIG_TAR"
 
 	# Write the playback configuration to the folder
-	cp -R Binaries/Sys playback/bin/
-	cp -R Binaries/User playback/bin/
-	mkdir playback/bin/Slippi
-	rm -rf ./Binaries/
+	cp -R Binaries/Sys playback/
+	cp -R Binaries/User playback/
 fi
 
 if [[ $DO_CLEANUP == 1 ]]; then
-	rm -rf Ishiiruka
+	rm -rf ./Ishiiruka
+	rm -rf ./Binaries/
 	#rm -f ../launch-slippi-netplay
 fi
 
 # -----------------------------------------------------------------------------
 # Make a symlink to Slippi Ishiiruka, optionally create a shortcut
 
-ln -s "$FOLDERNAME/netplay/bin/dolphin-emu" ../launch-slippi-netplay
+SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
+if [ ! -f "../$SYMLINK_NAME" ]; then
+	ln -s "$FOLDERNAME/netplay/bin/dolphin-emu" "../launch-slippi-${SLIPVER}-netplay"
+fi
 if [ "$SHORTCUTBOOL" -eq 1 ] && [ -d ~/.local/share/applications ]; then
 	rm -f ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
 	rm -f ~/Desktop/slippi-fm-$SLIPVER.desktop
