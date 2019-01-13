@@ -172,7 +172,7 @@ git checkout "$COMMITHASH"
 
 # We need to make sure that users installing >r11 will SKIP THIS PATCH before
 # calling CMAKE (the fix for Soundtouch should be in-tree for r11)
-if [[ "$SLIPVER" == "r10" ]]; then
+if [ "$SLIPVER" = "r10" ]; then
 	echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
 	sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
 fi
@@ -203,7 +203,7 @@ mkdir ./netplay/Slippi
 
 # We don't care about preserving things for r10 here because the launcher is
 # only compatible starting with >r11
-if [[ "$SLIPVER" != "r10" ]]; then
+if [ "$SLIPVER" != "r10" ]; then
 	# Have two directories - netplay and playback
 	cp -R netplay/ playback
 
@@ -218,7 +218,7 @@ if [[ "$SLIPVER" != "r10" ]]; then
 	cp -R Binaries/User playback/
 fi
 
-if [[ $DO_CLEANUP == 1 ]]; then
+if [ "$DO_CLEANUP" -eq 1 ]; then
 	rm -rf ./Ishiiruka
 	rm -rf ./Binaries/
 	#rm -f ../launch-slippi-netplay
@@ -229,7 +229,7 @@ fi
 
 SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
 if [ ! -f "../$SYMLINK_NAME" ]; then
-	ln -s "$FOLDERNAME/netplay/bin/dolphin-emu" "../launch-slippi-${SLIPVER}-netplay"
+	ln -s "$FOLDERNAME/netplay/dolphin-emu" "../launch-slippi-${SLIPVER}-netplay"
 fi
 if [ "$SHORTCUTBOOL" -eq 1 ] && [ -d ~/.local/share/applications ]; then
 	rm -f ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
