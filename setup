@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+set -x
 
 # Just set this to zero if you'd rather keep the build directory around.
 DO_CLEANUP=1
@@ -68,6 +69,30 @@ else
 fi
 echo ""
 
+# -----------------------------------------------------------------------------
+# Ask the user which version of Slippi to install. Set $COMMITHASH to some
+# commit associated with an Ishiiruka release
+
+echo "[*] Please select a version of Slippi to install (1 or 2):"
+echo "      1) Slippi r10"
+echo "      2) Slippi r11"
+read -r RESP
+case "$RESP" in
+	1)
+		COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
+		SLIPVER="r10"
+		;;
+	2)
+		COMMITHASH="465957c8646fce42c590c34b7851e2657874b56e"
+		SLIPVER="r11"
+		;;
+	*)
+		echo "[!] Please select one of the options. Quitting!"
+		exit -1
+		;;
+esac
+echo "[*] User selected Slippi release $SLIPVER"
+
 
 # -----------------------------------------------------------------------------
 # Set options for targeting a particular release.
@@ -85,14 +110,14 @@ echo ""
 # `project-slippi/slippi-ssbm-asm` to compile Gecko codes, etc).
 
 # For now, just deal with building r10 (make this user-configurable later).
-COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
 DOLPHIN_REPO="https://github.com/project-slippi/Ishiiruka.git"
 SCRIPT_REPO="https://github.com/project-slippi/Slippi-FM-installer"
-SLIPVER="r10"
 
-# Path to the tarball containing the Dolphin configuration files
-CONFIG_TAR="${SLIPVER}-config.tar.gz"
-CONFIG_URL="${SCRIPT_REPO}/raw/master/${CONFIG_TAR}"
+# Path to the tarballs containing the Dolphin configuration files
+PLAYBACK_CONFIG_TAR="slippi-${SLIPVER}-playback-config.tar.gz"
+RECORDING_CONFIG_TAR="slippi-${SLIPVER}-recording-config.tar.gz"
+PLAYBACK_CONFIG_URL="${SCRIPT_REPO}/raw/master/${PLAYBACK_CONFIG_TAR}"
+RECORDING_CONFIG_URL="${SCRIPT_REPO}/raw/master/${RECORDING_CONFIG_TAR}"
 
 echo "[*] Targeting Slippi release: $SLIPVER"
 FOLDERNAME="Slippi-FM-${SLIPVER}"
@@ -134,27 +159,24 @@ echo ""
 
 echo ""
 mkdir "$FOLDERNAME" && cd "$FOLDERNAME"
-echo "[*] Downloading config files..."
-curl -LO# $CONFIG_URL
+echo "[*] Downloading recording config files..."
+curl -LO# "$RECORDING_CONFIG_URL"
 echo "[*] Extracting config files..."
-tar -xzf "$CONFIG_TAR" --checkpoint-action='exec=printf "%d/410 records extracted.\r" $TAR_CHECKPOINT' --totals
-rm "$CONFIG_TAR"
+tar -xzf "$RECORDING_CONFIG_TAR" --checkpoint-action='exec=printf "%d/410 records extracted.\r" $TAR_CHECKPOINT' --totals
+rm "$RECORDING_CONFIG_TAR"
 
 echo "[*] Cloning from $DOLPHIN_REPO ..."
 git clone "$DOLPHIN_REPO" Ishiiruka
 cd Ishiiruka
 git checkout "$COMMITHASH"
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Hack to avoid using local system's SoundTouch libraries. An in-tree fix 
-# should be around in newer commits, so you'll need to update this script when 
-# switching off of the release associated with commit 50f504! You can safely 
-# remove this sed invocation after this has been sorted in the next release.
+# We need to make sure that users installing >r11 will SKIP THIS PATCH before
+# calling CMAKE (the fix for Soundtouch should be in-tree for r11)
+if [ "$SLIPVER" = "r10" ]; then
+	echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
+	sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
+fi
 
-echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
-sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # -----------------------------------------------------------------------------
 # Add config files into the build directory, then compile Ishiiruka and pull
@@ -176,18 +198,39 @@ make -j $CPUS -s
 cd ../..
 
 # Pull out all build artifacts into a bin/ directory for the user
-mv Ishiiruka/build/Binaries/ ./bin/
-mkdir ./bin/Slippi
+mv Ishiiruka/build/Binaries/ ./netplay/
+mkdir ./netplay/Slippi
 
-if [[ $DO_CLEANUP == 1 ]]; then
-	rm -rf Ishiiruka
-	rm -f ../launch-slippi-fm
+# We don't care about preserving things for r10 here because the launcher is
+# only compatible starting with >r11
+if [ "$SLIPVER" != "r10" ]; then
+	# Have two directories - netplay and playback
+	cp -R netplay/ playback
+
+	# Pull out the playback configuration
+	echo "[*] Downloading playback config files..."
+	curl -LO# $PLAYBACK_CONFIG_URL
+	tar -xzf "$PLAYBACK_CONFIG_TAR" --checkpoint-action='exec=printf "%d/410 records extracted.\r" $TAR_CHECKPOINT' --totals
+	rm "$PLAYBACK_CONFIG_TAR"
+
+	# Write the playback configuration to the folder
+	cp -R Binaries/Sys playback/
+	cp -R Binaries/User playback/
+fi
+
+if [ "$DO_CLEANUP" -eq 1 ]; then
+	rm -rf ./Ishiiruka
+	rm -rf ./Binaries/
 fi
 
 # -----------------------------------------------------------------------------
-# Make a symlink to Slippi Ishiiruka, optionally create a shortcut
+# Optionally create a shortcut/symlink
 
-ln -s "$FOLDERNAME/bin/dolphin-emu" ../launch-slippi-fm
+#SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
+#rm ../${SYMLINK_NAME}
+#ln -s "$FOLDERNAME/netplay/dolphin-emu" "${SYMLINK_NAME}"
+#echo "[*] Wrote a symlink 
+
 if [ "$SHORTCUTBOOL" -eq 1 ] && [ -d ~/.local/share/applications ]; then
 	rm -f ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
 	rm -f ~/Desktop/slippi-fm-$SLIPVER.desktop
@@ -216,3 +259,7 @@ echo "    desired Slippi FM version."
 echo ""
 echo "    If you've installed udev rules, make sure to unplug and replug your"
 echo "    adapter before opening Dolphin!"
+echo "" 
+echo "    If you're using the Slippi Desktop App on this machine, make sure you" 
+echo "    set the \"Playback Dolphin Path\" in the app settings to point at the"
+echo "    newly created \"${FOLDERNAME}/playback/bin/\" directory."
