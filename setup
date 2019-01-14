@@ -221,16 +221,16 @@ fi
 if [ "$DO_CLEANUP" -eq 1 ]; then
 	rm -rf ./Ishiiruka
 	rm -rf ./Binaries/
-	#rm -f ../launch-slippi-netplay
 fi
 
 # -----------------------------------------------------------------------------
-# Make a symlink to Slippi Ishiiruka, optionally create a shortcut
+# Optionally create a shortcut/symlink
 
-SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
-if [ ! -f "../$SYMLINK_NAME" ]; then
-	ln -s "$FOLDERNAME/netplay/dolphin-emu" "../launch-slippi-${SLIPVER}-netplay"
-fi
+#SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
+#rm ../${SYMLINK_NAME}
+#ln -s "$FOLDERNAME/netplay/dolphin-emu" "${SYMLINK_NAME}"
+#echo "[*] Wrote a symlink 
+
 if [ "$SHORTCUTBOOL" -eq 1 ] && [ -d ~/.local/share/applications ]; then
 	rm -f ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
 	rm -f ~/Desktop/slippi-fm-$SLIPVER.desktop
