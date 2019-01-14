@@ -1,15 +1,34 @@
 # Project Slippi
 
 This is a fork of the [Faster Melee build script for Linux](https://github.com/FasterMelee/FasterMelee-installer)
-specific to building Ishiiruka with Project Slippi support. It currently supports building the following versions 
-of the Slippi Ishiiruka fork:
+specific to building Ishiiruka with Project Slippi support. 
+
+This script currently supports building the following versions of the Slippi Ishiiruka fork:
 
 - Slippi Ishiiruka r10: `50f504eb710d1b1e74356e75f8fbef310b811951`
+- Slippi Ishiiruka r11: `465957c8646fce42c590c34b7851e2657874b56e`
 
 ## Usage
 ```sh
 sh -c "$(curl -Ls https://github.com/project-slippi/Slippi-FM-installer/raw/master/setup)"
 ```
+
+
+## Details
+
+For all builds _starting with r11_, this script produces two folders which each
+contain separate instances of Dolphin. The **netplay instance** (`netplay/` directory) 
+is used for playing and recording matches. The **playback instance** (`playback/` directory) 
+is used solely for playing back replays.
+
+In order to use the [the Slippi Desktop AppImage](https://github.com/project-slippi/slippi-desktop-app/releases)
+for playing back replays, Linux users will need to set the _"Playback Dolphin Path"_
+setting in the app to point at the directory with the **playback instance** of Dolphin
+created with this script.
+
+
+
+
 
 ------------------------------------
 
