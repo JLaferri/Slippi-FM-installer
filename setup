@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-set -x
 
 # Just set this to zero if you'd rather keep the build directory around.
 DO_CLEANUP=1
