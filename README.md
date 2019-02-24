@@ -7,6 +7,7 @@ This script currently supports building the following versions of the Slippi Ish
 
 - Slippi Ishiiruka r10: `50f504eb710d1b1e74356e75f8fbef310b811951`
 - Slippi Ishiiruka r11: `465957c8646fce42c590c34b7851e2657874b56e`
+- Slippi Ishiiruka r16: `6884794fdfb65cfe5ed1e8fd62f2cb5b730dff7c`
 
 ## Usage
 ```sh
