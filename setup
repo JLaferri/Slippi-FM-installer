@@ -43,14 +43,14 @@ echo ""
 if [ ! -e /etc/udev/rules.d/51-gcadapter.rules ]; then
 	echo "[*] Would you like to install udev rules for your Wii U adapter? (Y/n) "
 	read -r RESP
-	if [ "$RESP" = "y" ] || [ "$RESP" = "Y" ]; then
+	if [ "$RESP" = "n" ] || [ "$RESP" = "N" ]; then
+		echo "Skipped adding udev rules"
+	else
 		sudo rm -f /etc/udev/rules.d/51-gcadapter.rules
 		sudo touch /etc/udev/rules.d/51-gcadapter.rules
 		echo 'SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666"' | sudo tee /etc/udev/rules.d/51-gcadapter.rules > /dev/null
 		sudo udevadm control --reload-rules
 		echo "Successfully added udev rules"
-	else
-		echo "Skipped adding udev rules"
 	fi
 	echo ""
 else
@@ -230,21 +230,24 @@ fi
 # -----------------------------------------------------------------------------
 # Optionally create a shortcut/symlink
 
-#SYMLINK_NAME="launch-slippi-${SLIPVER}-netplay"
-#rm ../${SYMLINK_NAME}
-#ln -s "$FOLDERNAME/netplay/dolphin-emu" "${SYMLINK_NAME}"
-#echo "[*] Wrote a symlink 
+SYMLINK_NAME="slippi-${SLIPVER}-netplay"
+if [ ! -e "${SYMLINK_NAME}" ]; then
+	ln -s "$FOLDERNAME/netplay/dolphin-emu" "../${SYMLINK_NAME}"
+	echo "[*] Wrote a symlink "
+else
+	echo "[*] Symlink ${SYMLINK_NAME} already exists"
+fi
 
 if [ "$SHORTCUTBOOL" -eq 1 ] && [ -d ~/.local/share/applications ]; then
 	rm -f ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
 	rm -f ~/Desktop/slippi-fm-$SLIPVER.desktop
 	touch ~/.local/share/applications/slippi-fm-$SLIPVER.desktop
-	EXEPATH="$(pwd)/bin"
+	EXEPATH="$(pwd)/netplay/"
 	FMNAME="Slippi FM $SLIPVER"
 	echo "[Desktop Entry]
 Type=Application
 GenericName=Wii/GameCube Emulator
-Comment=Slippi Ishiiruka fork for SSBM
+Comment=Slippi Ishiiruka $SLIPVER
 Categories=Emulator;Game;
 Icon=$EXEPATH/dolphin-emu.png
 Version=$SLIPVER
@@ -257,13 +260,14 @@ else
 	echo "[!] .local folder not found, skipping desktop shortcut"
 fi
 
-echo "[!] All done! Run ./launch-slippi-fm to run the latest installed version!" 
-echo "    Alternatively, go to Application > Games or your desktop and select the"
-echo "    desired Slippi FM version." 
+echo "[!] All done! Run ./${SYMLINK_NAME} to run the latest installed version!" 
+echo "    Alternatively, if you installed a desktop shortcut, you can got to"
+echo "    Application > Games or your desktop and select the desired Slippi FM"
+echo "    version." 
 echo ""
 echo "    If you've installed udev rules, make sure to unplug and replug your"
 echo "    adapter before opening Dolphin!"
 echo "" 
 echo "    If you're using the Slippi Desktop App on this machine, make sure you" 
 echo "    set the \"Playback Dolphin Path\" in the app settings to point at the"
-echo "    newly created \"${FOLDERNAME}/playback/bin/\" directory."
+echo "    newly created \"${FOLDERNAME}/playback/\" directory."
