@@ -15,12 +15,13 @@ CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 # -----------------------------------------------------------------------------
 # Deal with existing installations
 
-for f in Slippi-FM*; do
-	if [ -d "${f}" ] && [ ! -d "$f/playback" ] && [ ! -d "$f/netplay" ]; then
-		echo "[*] Found incomplete installation at $f/, deleting."
-		rm -rf "$f" # is incomplete if bin/ doesn't exist
-	fi
-done
+# Make the user delete incomplete installations.
+#for f in Slippi-FM*; do
+#	if [ -d "${f}" ] && [ ! -d "$f/playback" ] && [ ! -d "$f/netplay" ]; then
+#		echo "[*] Found incomplete installation at $f/, deleting."
+#		rm -rf "$f" # is incomplete if bin/ doesn't exist
+#	fi
+#done
 
 echo ""
 echo "[*] Would you like to overwrite ALL of your previous installations? (y/N) "
@@ -72,24 +73,30 @@ echo ""
 # Ask the user which version of Slippi to install. Set $COMMITHASH to some
 # commit associated with an Ishiiruka release
 
-echo "[*] Please select a version of Slippi to install (1-3):"
-echo "      1) Slippi r16"
-echo "      2) Slippi r11"
-echo "      3) Slippi r10"
+echo "[*] Please select a version of Slippi to install (1-4):"
+echo "      1) Slippi r18"
+echo "      2) Slippi r16"
+echo "      3) Slippi r11"
+echo "      4) Slippi r10"
 read -r RESP
 case "$RESP" in
-	3)
+	4)
 		COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
 		SLIPVER="r10"
 		;;
-	2)
+	3)
 		COMMITHASH="465957c8646fce42c590c34b7851e2657874b56e"
 		SLIPVER="r11"
 		;;
-	1)
+	2)
 		COMMITHASH="6884794fdfb65cfe5ed1e8fd62f2cb5b730dff7c"
 		SLIPVER="r16"
 		;;
+	1)
+		COMMITHASH="1ef6f7bfc12e8566153054e6c964111da44f9125"
+		SLIPVER="r18"
+		;;
+
 	*)
 		echo "[!] Please select one of the options. Quitting!"
 		exit -1
