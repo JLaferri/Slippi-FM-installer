@@ -268,7 +268,7 @@ else
 fi
 
 echo "[!] All done! Run ./${SYMLINK_NAME} to run the latest installed version!" 
-echo "    Alternatively, if you installed a desktop shortcut, you can got to"
+echo "    Alternatively, if you installed a desktop shortcut, you can go to"
 echo "    Application > Games or your desktop and select the desired Slippi FM"
 echo "    version." 
 echo ""
