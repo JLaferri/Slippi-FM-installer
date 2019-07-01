@@ -42,7 +42,7 @@ For most users, see [this page](https://wiki.dolphin-emu.org/index.php?title=Bui
 
 ### Fedora:
 
-`dnf install cmake git gcc-c++ libXext-devel libgudev gtk+-devel wxGTK-devel systemd-devel openal-soft-devel libevdev-devel libao-devel SOIL-devel libXrandr-devel pulseaudio-libs-devel bluez-libs-devel libusb-devel`
+`dnf install cmake git gcc-c++ libXext-devel libgudev libXi-devel libSM-devel gtk2-devel wxGTK3-devel systemd-devel openal-soft-devel libevdev-devel libao-devel SOIL-devel libXrandr-devel pulseaudio-libs-devel bluez-libs-devel libusb-devel`
 
 ### Solus (possible list, untested):
 
