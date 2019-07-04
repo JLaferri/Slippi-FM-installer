@@ -11,6 +11,13 @@ CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 [ -z "$CPUS" ] && CPUS=$(ksh93 -c 'getconf NPROCESSORS_ONLN')
 [ -z "$CPUS" ] && CPUS=1
 
+arch="$(uname -m)"
+DO_AARCH64=0
+if [ "${arch}" == "aarch64" ]; then
+	echo "[!] FYI: aarch64 support is unknown; we'll apply some patches"
+	DO_AARCH64=1
+fi
+
 
 # -----------------------------------------------------------------------------
 # Deal with existing installations
@@ -186,6 +193,12 @@ git checkout "$COMMITHASH"
 if [ "$SLIPVER" = "r10" ]; then
 	echo "[*] Patching CMakeLists to use SoundTouch from Externals .."
 	sed -i -e '741,746 s/^/#/'  -e '750 s/^/#/' CMakeLists.txt
+fi
+
+AARCH64_TARGET="Source/Core/VideoCommon/CMakeLists.txt"
+if [ $DO_AARCH64 == 1 ]; then
+	sed -i 's/TextureDecoder_Generic.cpp/GenericTextureDecoder.cpp/g' "${AARCH64_TARGET}"
+	echo "[*] Patched ${AARCH64_TARGET} for an aarch64 build ..."
 fi
 
 
