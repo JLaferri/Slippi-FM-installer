@@ -41,7 +41,7 @@ echo ""
 # -----------------------------------------------------------------------------
 # Ask the user about udev rules, shortcuts, build options
 
-if [ ! -e /etc/udev/rules.d/51-gcadapter.rules ]; then
+if [ ! -e /etc/udev/rules.d/51-gcadapter.rules ] && [ -z "${IN_NIX_SHELL++}" ]; then
 	echo "[*] Would you like to install udev rules for your Wii U adapter? (Y/n) "
 	read -r RESP
 	if [ "$RESP" = "n" ] || [ "$RESP" = "N" ]; then
@@ -202,7 +202,11 @@ mv ../../Binaries .
 mv ../Data/dolphin-emu.png Binaries/
 
 # Build Ishiiruka, yielding `dolphin-emu` binaries
-cmake .. -DLINUX_LOCAL_DEV=true
+if [ ! -z "${IN_NIX_SHELL++}" ]; then
+	cmake .. -DLINUX_LOCAL_DEV=true -DGTK2_GLIBCONFIG_INCLUDE_DIR=${glib}/lib/glib-2.0/include -DGTK2_GDKCONFIG_INCLUDE_DIR=${gtk2}/lib/gtk-2.0/include -DGTK2_INCLUDE_DIRS=${gtk2}/lib/gtk-2.0 -DENABLE_LTO=True
+else
+	cmake .. -DLINUX_LOCAL_DEV=true
+fi
 make -j $CPUS -s
 
 # Leave build directory (now prepared all config files and binaries)
