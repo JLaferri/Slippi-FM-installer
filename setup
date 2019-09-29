@@ -78,7 +78,8 @@ echo "      1) Slippi r18"
 echo "      2) Slippi r16"
 echo "      3) Slippi r11"
 echo "      4) Slippi r10"
-read -r RESP
+echo "      *) Default: Slippi r18"
+read_input RESP 1
 case "$RESP" in
 	4)
 		COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
@@ -98,8 +99,8 @@ case "$RESP" in
 		;;
 
 	*)
-		echo "[!] Please select one of the options. Quitting!"
-		exit -1
+		COMMITHASH="1ef6f7bfc12e8566153054e6c964111da44f9125"
+		SLIPVER="r18"
 		;;
 esac
 echo "[*] User selected Slippi release $SLIPVER"
