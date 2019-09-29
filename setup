@@ -4,6 +4,9 @@ set -e
 # Just set this to zero if you'd rather keep the build directory around.
 DO_CLEANUP=1
 
+# Set this to 1 to accept default prompts
+ACCEPT_DEFAULTS=0
+
 # Attempts to determine the number of cores in the CPU
 # Source: https://gist.github.com/jj1bdx/5746298
 CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
@@ -11,6 +14,25 @@ CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 [ -z "$CPUS" ] && CPUS=$(ksh93 -c 'getconf NPROCESSORS_ONLN')
 [ -z "$CPUS" ] && CPUS=1
 
+while getopts 'yh' flag; do
+	case "${flag}" in
+		y) ACCEPT_DEFAULTS=1;;
+		h)
+			echo "Usage:"
+			echo "    -h        Display this help message and exit."
+			echo "    -y        Accept default prompts."
+			exit 0;;
+		\? ) exit 1;;
+	esac
+done
+
+read_input() {
+	if [ "$ACCEPT_DEFAULTS" -eq 1 ]; then
+		set ""
+	else
+		read -r "$1"
+	fi
+}
 
 # -----------------------------------------------------------------------------
 # Deal with existing installations
@@ -25,7 +47,7 @@ CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 
 echo ""
 echo "[*] Would you like to overwrite ALL of your previous installations? (y/N) "
-read -r RESP
+read_input RESP
 if [ "$RESP" = "y" ] || [ "$RESP" = "Y" ]; then
 	echo "[*] Are you sure? This action is not reversible! (y/N) "
 	read -r RESP
@@ -43,7 +65,7 @@ echo ""
 
 if [ ! -e /etc/udev/rules.d/51-gcadapter.rules ]; then
 	echo "[*] Would you like to install udev rules for your Wii U adapter? (Y/n) "
-	read -r RESP
+	read_input RESP
 	if [ "$RESP" = "n" ] || [ "$RESP" = "N" ]; then
 		echo "Skipped adding udev rules"
 	else
@@ -59,7 +81,7 @@ else
 fi
 
 echo "[*] Would you like to make a desktop shortcut? (Y/n) "
-read -r RESP
+read_input RESP
 if [ ! "$RESP" = "n" ] && [ ! "$RESP" = "N" ]; then
 	SHORTCUTBOOL=1
 	echo "A desktop shortcut will be created after building Ishiiruka"
@@ -78,7 +100,8 @@ echo "      1) Slippi r18"
 echo "      2) Slippi r16"
 echo "      3) Slippi r11"
 echo "      4) Slippi r10"
-read -r RESP
+echo "      *) Default: Slippi r18"
+read_input RESP 1
 case "$RESP" in
 	4)
 		COMMITHASH="50f504eb710d1b1e74356e75f8fbef310b811951"
@@ -98,8 +121,8 @@ case "$RESP" in
 		;;
 
 	*)
-		echo "[!] Please select one of the options. Quitting!"
-		exit -1
+		COMMITHASH="1ef6f7bfc12e8566153054e6c964111da44f9125"
+		SLIPVER="r18"
 		;;
 esac
 echo "[*] User selected Slippi release $SLIPVER"
@@ -134,10 +157,10 @@ echo "[*] Targeting Slippi release: $SLIPVER"
 FOLDERNAME="Slippi-FM-${SLIPVER}"
 if [ -d "$FOLDERNAME" ]; then
 	echo "[*] FM Folder with same version found! Would you like to overwrite? (y/N) "
-	read -r RESP
+	read_input RESP
 	if [ "$RESP" = "y" ] || [ "$RESP" = "Y" ]; then
 		echo "[*] Are you sure? This action is not reversible! (y/N) "
-		read -r RESP
+		read_input RESP
 		if [ "$RESP" = "y" ] || [ "$RESP" = "Y" ] ; then
 			rm -r "$FOLDERNAME"
 			echo "Sucessfully deleted $FOLDERNAME"
@@ -155,7 +178,7 @@ echo ""
 echo "[*] CPU Threads detected: $CPUS"
 echo "[*] How many threads would you like to use to compile? "
 echo "    (passed to make as -j flag, default: 1, range 1-$((CPUS)): "
-read -r RESP
+read_input RESP
 if [ "$RESP" -ge 1 ] 2> /dev/null && [ "$RESP" -le $((CPUS + 1)) ] 2> /dev/null; then
 	CPUS=$RESP
 else
