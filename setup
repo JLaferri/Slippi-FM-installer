@@ -14,7 +14,7 @@ CPUS=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
 [ -z "$CPUS" ] && CPUS=$(ksh93 -c 'getconf NPROCESSORS_ONLN')
 [ -z "$CPUS" ] && CPUS=1
 
-while getopts 'y' flag; do
+while getopts 'yh' flag; do
 	case "${flag}" in
 		y) ACCEPT_DEFAULTS=1;;
 		h)
