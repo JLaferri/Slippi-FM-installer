@@ -1,5 +1,7 @@
 # Project Slippi
 
+**THIS WILL NOT BUILD A BINARY COMPATIBLE WITH SLIPPI ONLINE**
+
 This is a fork of the [Faster Melee build script for Linux](https://github.com/FasterMelee/FasterMelee-installer)
 specific to building Ishiiruka with Project Slippi support. 
 
