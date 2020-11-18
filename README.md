@@ -18,6 +18,14 @@ This script also supports building the following older versions of the Slippi Is
 sh -c "$(curl -Ls https://github.com/project-slippi/Slippi-FM-installer/raw/master/setup)"
 ```
 
+### NixOS
+Tested on 19.03 stable channel.
+
+#### 1. Clone the repository
+
+#### 2. Run `nix-shell` in the root of the project
+
+#### 3. Run the setup script
 
 ## Details
 
